@@ -1,6 +1,7 @@
 """
 Junaid's Excel File Merger
 Merges multiple Excel files from healthcare surveillance sources into a single CSV.
+Output: 17 columns in new format with MSU Unique Code and Ward columns.
 """
 
 import streamlit as st
