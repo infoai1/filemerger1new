@@ -51,6 +51,7 @@ def main():
                                                'Opd Ipd', 'Provisional Diagnosis', 'Test Performed', 'Pathogen Name',
                                                'Pathogen Subtype', 'Facility Name Pform','Latitude','Longitude']
                 data = data[columns_to_keep_presumptive]
+                data = data.rename(columns={'Facility Name Pform': 'Facility Name'})
 
             # Check file name for 'Laboratory'
             elif uploaded_file.name.startswith('Laboratory'):
@@ -65,6 +66,7 @@ def main():
                                               'Opd Ipd', 'Confirmed Diagnosis', 'Test Performed', 'Pathogen Name',
                                               'Pathogen Subtype', 'Facility Name Lform','Latitude','Longitude']
                 data = data[columns_to_keep_laboratory]
+                data = data.rename(columns={'Facility Name Lform': 'Facility Name'})
 
             
             # Check file name for 'Line'
