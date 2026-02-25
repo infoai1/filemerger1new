@@ -45,13 +45,20 @@ def main():
                 if 'Patient Transaction Id' in data.columns:
                     data.insert(1, 'Reporting Date', data['Patient Transaction Id'].apply(extract_date))
 
+                # Find the actual facility name column in the input file
+                facility_col = [col for col in data.columns if 'Facility Name' in col]
+                facility_col_name = facility_col[0] if facility_col else None
+
                 # Keep only specified columns for Presumptive
-                columns_to_keep_presumptive = ['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name', 
-                                               'Contact Number', 'Gender', 'Age', 'Patient Address', 'District', 
+                columns_to_keep_presumptive = ['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
+                                               'Contact Number', 'Gender', 'Age', 'Patient Address', 'District',
                                                'Opd Ipd', 'Provisional Diagnosis', 'Test Performed', 'Pathogen Name',
-                                               'Pathogen Subtype', 'Facility Name Pform','Latitude','Longitude']
+                                               'Pathogen Subtype', 'Latitude','Longitude']
+                if facility_col_name:
+                    columns_to_keep_presumptive.append(facility_col_name)
                 data = data[columns_to_keep_presumptive]
-                data = data.rename(columns={'Facility Name Pform': 'Facility Name'})
+                if facility_col_name:
+                    data = data.rename(columns={facility_col_name: 'Facility Name'})
 
             # Check file name for 'Laboratory'
             elif uploaded_file.name.startswith('Laboratory'):
@@ -60,13 +67,20 @@ def main():
                 if 'Batch Submitteddate' in data.columns:
                     data.insert(1, 'Reporting Date', data['Batch Submitteddate'])
 
+                # Find the actual facility name column in the input file
+                facility_col = [col for col in data.columns if 'Facility Name' in col]
+                facility_col_name = facility_col[0] if facility_col else None
+
                 # Keep only specified columns for Laboratory
-                columns_to_keep_laboratory =['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name', 
-                                              'Contact Number', 'Gender', 'Age', 'Patient Address', 'District', 
+                columns_to_keep_laboratory =['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
+                                              'Contact Number', 'Gender', 'Age', 'Patient Address', 'District',
                                               'Opd Ipd', 'Confirmed Diagnosis', 'Test Performed', 'Pathogen Name',
-                                              'Pathogen Subtype', 'Facility Name Lform','Latitude','Longitude']
+                                              'Pathogen Subtype', 'Latitude','Longitude']
+                if facility_col_name:
+                    columns_to_keep_laboratory.append(facility_col_name)
                 data = data[columns_to_keep_laboratory]
-                data = data.rename(columns={'Facility Name Lform': 'Facility Name'})
+                if facility_col_name:
+                    data = data.rename(columns={facility_col_name: 'Facility Name'})
 
             
             # Check file name for 'Line'
