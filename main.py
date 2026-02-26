@@ -119,6 +119,9 @@ def main():
         # Merge all data
         merged_data = pd.concat(all_data, ignore_index=True)
 
+        # Add Serial Number as first column
+        merged_data.insert(0, 'Sr No', range(1, len(merged_data) + 1))
+
         # Add 'Duplicate Case' column
         # Mark as 'Duplicate' if the name appears more than once
         merged_data['Duplicate Case'] = merged_data.duplicated(subset=['Patient Name'], keep=False)
