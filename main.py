@@ -40,6 +40,10 @@ def main():
 
             # Check file name for 'Presumptive'
             if uploaded_file.name.startswith('Presumptive'):
+                # DEBUG: Show all columns with their index positions
+                col_list = [(i, col) for i, col in enumerate(data.columns)]
+                st.warning(f"P form columns in {uploaded_file.name}: {col_list}")
+
                 # Capture facility name from column AD (index 29) BEFORE inserting new columns
                 if len(data.columns) > 29:
                     facility_col_name = data.columns[29]
