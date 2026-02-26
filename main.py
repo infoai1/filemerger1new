@@ -33,11 +33,12 @@ def main():
                 if 'Patient Transaction Id' in data.columns:
                     data.insert(1, 'Reporting Date', data['Patient Transaction Id'].apply(extract_date))
 
-                # Keep only specified columns for Presumptive
+                # Keep only specified columns for Presumptive (skip any that don't exist in file)
                 columns_to_keep_presumptive = ['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
                                                'Contact Number', 'Gender', 'Age', 'Patient Address', 'Ward',
                                                'Provisional Diagnosis', 'District', 'Opd Ipd', 'Test Performed',
                                                'Pathogen Name', 'Pathogen Subtype', 'Facility Name Lform']
+                columns_to_keep_presumptive = [c for c in columns_to_keep_presumptive if c in data.columns]
                 data = data[columns_to_keep_presumptive]
                 data = data.rename(columns={'Form Type': 'Type', 'Patient Name': 'Name of Patient',
                                             'Provisional Diagnosis': 'Confirmed Diagnosis'})
@@ -49,11 +50,12 @@ def main():
                 if 'Batch Submitteddate' in data.columns:
                     data.insert(1, 'Reporting Date', data['Batch Submitteddate'])
 
-                # Keep only specified columns for Laboratory
+                # Keep only specified columns for Laboratory (skip any that don't exist in file)
                 columns_to_keep_laboratory = ['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
                                               'Contact Number', 'Gender', 'Age', 'Patient Address', 'Ward',
                                               'Confirmed Diagnosis', 'District', 'Opd Ipd', 'Test Performed',
                                               'Pathogen Name', 'Pathogen Subtype', 'Facility Name Lform']
+                columns_to_keep_laboratory = [c for c in columns_to_keep_laboratory if c in data.columns]
                 data = data[columns_to_keep_laboratory]
                 data = data.rename(columns={'Form Type': 'Type', 'Patient Name': 'Name of Patient'})
 
@@ -67,8 +69,9 @@ def main():
                 if 'Updateddate' in data.columns:
                     data.insert(1, 'Reporting Date', data['Updateddate'])
 
-                # Keep only specified columns for Laboratory
+                # Keep only specified columns for Line form (skip any that don't exist in file)
                 columns_to_keep_line = ['Form Type', 'Reporting Date', 'Patient Name', 'Age', 'Gender','Houseno','Hfname','Sformdiseasename','Wardname','Latitude','Longitude']
+                columns_to_keep_line = [c for c in columns_to_keep_line if c in data.columns]
                 data = data[columns_to_keep_line]
 
             if data is not None:
