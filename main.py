@@ -14,7 +14,7 @@ def extract_date(transaction_id):
 
 
 def main():
-    st.title("Junaid's Excel File Merger")
+    st.title("MSU Excel File Merger")
 
 
     uploaded_files = st.file_uploader("Upload Excel files", type=["xlsx"], accept_multiple_files=True)
