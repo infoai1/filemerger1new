@@ -26,6 +26,9 @@ def main():
         for uploaded_file in uploaded_files:
             data = read_excel(uploaded_file)
 
+            # DEBUG: Show all column names from the uploaded file
+            st.info(f"Columns in {uploaded_file.name}: {data.columns.tolist()}")
+
             # Check file name for 'Presumptive'
             if uploaded_file.name.startswith('Presumptive'):
                 # Add 'Form Type' and 'Reporting Date' columns
