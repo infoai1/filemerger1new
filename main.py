@@ -40,16 +40,16 @@ def main():
 
             # Check file name for 'Presumptive'
             if uploaded_file.name.startswith('Presumptive'):
+                # Capture facility name from column AD (index 29) BEFORE inserting new columns
+                if len(data.columns) > 29:
+                    facility_col_name = data.columns[29]
+                else:
+                    facility_col_name = None
+
                 # Add 'Form Type' and 'Reporting Date' columns
                 data.insert(0, 'Form Type', 'P form')
                 if 'Patient Transaction Id' in data.columns:
                     data.insert(1, 'Reporting Date', data['Patient Transaction Id'].apply(extract_date))
-
-                # Find the actual facility name column in the input file (case-insensitive)
-                facility_col = [col for col in data.columns if 'facility' in str(col).lower()]
-                facility_col_name = facility_col[0] if facility_col else None
-                if not facility_col_name:
-                    st.warning(f"No 'Facility' column found in {uploaded_file.name}. Columns: {data.columns.tolist()}")
 
                 # Keep only specified columns for Presumptive
                 columns_to_keep_presumptive = ['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
@@ -59,21 +59,24 @@ def main():
                 if facility_col_name:
                     columns_to_keep_presumptive.append(facility_col_name)
                 data = data[columns_to_keep_presumptive]
+                # Rename to unify columns with Laboratory form in merged output
+                rename_map = {'Provisional Diagnosis': 'Confirmed Diagnosis'}
                 if facility_col_name:
-                    data = data.rename(columns={facility_col_name: 'Facility Name'})
+                    rename_map[facility_col_name] = 'Facility Name'
+                data = data.rename(columns=rename_map)
 
             # Check file name for 'Laboratory'
             elif uploaded_file.name.startswith('Laboratory'):
+                # Capture facility name from column AC (index 28) BEFORE inserting new columns
+                if len(data.columns) > 28:
+                    facility_col_name = data.columns[28]
+                else:
+                    facility_col_name = None
+
                 # Add 'Form Type' and 'Reporting Date' columns
                 data.insert(0, 'Form Type', 'L form')
                 if 'Batch Submitteddate' in data.columns:
                     data.insert(1, 'Reporting Date', data['Batch Submitteddate'])
-
-                # Find the actual facility name column in the input file (case-insensitive)
-                facility_col = [col for col in data.columns if 'facility' in str(col).lower()]
-                facility_col_name = facility_col[0] if facility_col else None
-                if not facility_col_name:
-                    st.warning(f"No 'Facility' column found in {uploaded_file.name}. Columns: {data.columns.tolist()}")
 
                 # Keep only specified columns for Laboratory
                 columns_to_keep_laboratory =['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
