@@ -20,18 +20,6 @@ def main():
     
     uploaded_files = st.file_uploader("Upload Excel files", type=["xlsx"], accept_multiple_files=True)
     
-    # Define the get_status function here
-    def get_status(row):
-        if pd.isna(row['Patient Address']) and pd.isna(row['Contact Number']):
-            return 'No Mobile and No Address'
-        elif pd.isna(row['Patient Address']):
-            return 'No Address'
-        elif pd.isna(row['Contact Number']):
-            return 'No Mobile'
-        else:
-            return 'Data Available'
-
-
     if uploaded_files:
         all_data = []
 
@@ -40,16 +28,6 @@ def main():
 
             # Check file name for 'Presumptive'
             if uploaded_file.name.startswith('Presumptive'):
-                # DEBUG: Show all columns with their index positions
-                col_list = [(i, col) for i, col in enumerate(data.columns)]
-                st.warning(f"P form columns in {uploaded_file.name}: {col_list}")
-
-                # Capture facility name from column AD (index 29) BEFORE inserting new columns
-                if len(data.columns) > 29:
-                    facility_col_name = data.columns[29]
-                else:
-                    facility_col_name = None
-
                 # Add 'Form Type' and 'Reporting Date' columns
                 data.insert(0, 'Form Type', 'P form')
                 if 'Patient Transaction Id' in data.columns:
@@ -57,41 +35,27 @@ def main():
 
                 # Keep only specified columns for Presumptive
                 columns_to_keep_presumptive = ['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
-                                               'Contact Number', 'Gender', 'Age', 'Patient Address', 'District',
-                                               'Opd Ipd', 'Provisional Diagnosis', 'Test Performed', 'Pathogen Name',
-                                               'Pathogen Subtype', 'Latitude','Longitude']
-                if facility_col_name:
-                    columns_to_keep_presumptive.append(facility_col_name)
+                                               'Contact Number', 'Gender', 'Age', 'Patient Address', 'Ward',
+                                               'Provisional Diagnosis', 'District', 'Opd Ipd', 'Test Performed',
+                                               'Pathogen Name', 'Pathogen Subtype', 'Facility Name Lform']
                 data = data[columns_to_keep_presumptive]
-                # Rename to unify columns with Laboratory form in merged output
-                rename_map = {'Provisional Diagnosis': 'Confirmed Diagnosis'}
-                if facility_col_name:
-                    rename_map[facility_col_name] = 'Facility Name'
-                data = data.rename(columns=rename_map)
+                data = data.rename(columns={'Form Type': 'Type', 'Patient Name': 'Name of Patient',
+                                            'Provisional Diagnosis': 'Confirmed Diagnosis'})
 
             # Check file name for 'Laboratory'
             elif uploaded_file.name.startswith('Laboratory'):
-                # Capture facility name from column AC (index 28) BEFORE inserting new columns
-                if len(data.columns) > 28:
-                    facility_col_name = data.columns[28]
-                else:
-                    facility_col_name = None
-
                 # Add 'Form Type' and 'Reporting Date' columns
                 data.insert(0, 'Form Type', 'L form')
                 if 'Batch Submitteddate' in data.columns:
                     data.insert(1, 'Reporting Date', data['Batch Submitteddate'])
 
                 # Keep only specified columns for Laboratory
-                columns_to_keep_laboratory =['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
-                                              'Contact Number', 'Gender', 'Age', 'Patient Address', 'District',
-                                              'Opd Ipd', 'Confirmed Diagnosis', 'Test Performed', 'Pathogen Name',
-                                              'Pathogen Subtype', 'Latitude','Longitude']
-                if facility_col_name:
-                    columns_to_keep_laboratory.append(facility_col_name)
+                columns_to_keep_laboratory = ['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
+                                              'Contact Number', 'Gender', 'Age', 'Patient Address', 'Ward',
+                                              'Confirmed Diagnosis', 'District', 'Opd Ipd', 'Test Performed',
+                                              'Pathogen Name', 'Pathogen Subtype', 'Facility Name Lform']
                 data = data[columns_to_keep_laboratory]
-                if facility_col_name:
-                    data = data.rename(columns={facility_col_name: 'Facility Name'})
+                data = data.rename(columns={'Form Type': 'Type', 'Patient Name': 'Name of Patient'})
 
             
             # Check file name for 'Line'
@@ -107,11 +71,6 @@ def main():
                 columns_to_keep_line = ['Form Type', 'Reporting Date', 'Patient Name', 'Age', 'Gender','Houseno','Hfname','Sformdiseasename','Wardname','Latitude','Longitude']
                 data = data[columns_to_keep_line]
 
-            
-            # Add 'Status of Mobile & Address' column
-            data['Status of Mobile & Address'] = data.apply(get_status, axis=1)
-
-            
             if data is not None:
                 all_data.append(data)
     
@@ -120,11 +79,11 @@ def main():
         merged_data = pd.concat(all_data, ignore_index=True)
 
         # Add Serial Number as first column
-        merged_data.insert(0, 'Sr No', range(1, len(merged_data) + 1))
+        merged_data.insert(0, 'Sr. No', range(1, len(merged_data) + 1))
 
         # Add 'Duplicate Case' column
         # Mark as 'Duplicate' if the name appears more than once
-        merged_data['Duplicate Case'] = merged_data.duplicated(subset=['Patient Name'], keep=False)
+        merged_data['Duplicate Case'] = merged_data.duplicated(subset=['Name of Patient'], keep=False)
         merged_data['Duplicate Case'] = merged_data['Duplicate Case'].map({True: 'Duplicate', False: ''})
 
 
