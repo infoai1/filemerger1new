@@ -12,22 +12,28 @@ def extract_date(transaction_id):
             return f"{date_str[0:2]}/{date_str[2:4]}/{date_str[4:]}"
     return None
 
+def find_facility_col(data):
+    """Find any column containing 'facility' (case-insensitive) in its name."""
+    for col in data.columns:
+        if 'facility' in str(col).lower():
+            return col
+    return None
 
-    
+
 def main():
     st.title("Junaid's Excel File Merger")
 
-    
+
     uploaded_files = st.file_uploader("Upload Excel files", type=["xlsx"], accept_multiple_files=True)
-    
+
     if uploaded_files:
         all_data = []
 
         for uploaded_file in uploaded_files:
             data = read_excel(uploaded_file)
 
-            # DEBUG: Show all column names from the uploaded file
-            st.info(f"Columns in {uploaded_file.name}: {data.columns.tolist()}")
+            # Auto-detect facility name column before any inserts
+            facility_col_name = find_facility_col(data)
 
             # Check file name for 'Presumptive'
             if uploaded_file.name.startswith('Presumptive'):
@@ -40,11 +46,16 @@ def main():
                 columns_to_keep_presumptive = ['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
                                                'Contact Number', 'Gender', 'Age', 'Patient Address', 'Ward',
                                                'Provisional Diagnosis', 'District', 'Opd Ipd', 'Test Performed',
-                                               'Pathogen Name', 'Pathogen Subtype', 'Facility Name Lform']
+                                               'Pathogen Name', 'Pathogen Subtype']
+                if facility_col_name:
+                    columns_to_keep_presumptive.append(facility_col_name)
                 columns_to_keep_presumptive = [c for c in columns_to_keep_presumptive if c in data.columns]
                 data = data[columns_to_keep_presumptive]
-                data = data.rename(columns={'Form Type': 'Type', 'Patient Name': 'Name of Patient',
-                                            'Provisional Diagnosis': 'Confirmed Diagnosis'})
+                rename_map = {'Form Type': 'Type', 'Patient Name': 'Name of Patient',
+                              'Provisional Diagnosis': 'Confirmed Diagnosis'}
+                if facility_col_name:
+                    rename_map[facility_col_name] = 'Facility Name'
+                data = data.rename(columns=rename_map)
 
             # Check file name for 'Laboratory'
             elif uploaded_file.name.startswith('Laboratory'):
@@ -57,12 +68,17 @@ def main():
                 columns_to_keep_laboratory = ['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
                                               'Contact Number', 'Gender', 'Age', 'Patient Address', 'Ward',
                                               'Confirmed Diagnosis', 'District', 'Opd Ipd', 'Test Performed',
-                                              'Pathogen Name', 'Pathogen Subtype', 'Facility Name Lform']
+                                              'Pathogen Name', 'Pathogen Subtype']
+                if facility_col_name:
+                    columns_to_keep_laboratory.append(facility_col_name)
                 columns_to_keep_laboratory = [c for c in columns_to_keep_laboratory if c in data.columns]
                 data = data[columns_to_keep_laboratory]
-                data = data.rename(columns={'Form Type': 'Type', 'Patient Name': 'Name of Patient'})
+                rename_map = {'Form Type': 'Type', 'Patient Name': 'Name of Patient'}
+                if facility_col_name:
+                    rename_map[facility_col_name] = 'Facility Name'
+                data = data.rename(columns=rename_map)
 
-            
+
             # Check file name for 'Line'
             elif uploaded_file.name.startswith('Line'):
                 # Add 'Form Type' column
@@ -79,7 +95,7 @@ def main():
 
             if data is not None:
                 all_data.append(data)
-    
+
 
         # Merge all data
         merged_data = pd.concat(all_data, ignore_index=True)
