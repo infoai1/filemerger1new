@@ -39,6 +39,17 @@ def main():
         for uploaded_file in uploaded_files:
             data = read_excel(uploaded_file)
 
+            # DEBUG: Show all columns with 'facility' in name, with index and sample value
+            facility_cols_debug = []
+            for i, col in enumerate(data.columns):
+                if 'facility' in str(col).lower():
+                    sample = data[col].dropna().iloc[0] if not data[col].dropna().empty else 'EMPTY'
+                    facility_cols_debug.append(f"Index {i}: '{col}' → sample: '{sample}'")
+            if facility_cols_debug:
+                st.error(f"FACILITY COLUMNS in {uploaded_file.name}:\n" + "\n".join(facility_cols_debug))
+            else:
+                st.error(f"NO FACILITY COLUMNS in {uploaded_file.name}. ALL columns: {list(enumerate(data.columns.tolist()))}")
+
             # Auto-detect facility name column before any inserts
             facility_col_name = find_facility_col(data)
 
