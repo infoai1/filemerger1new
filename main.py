@@ -13,11 +13,18 @@ def extract_date(transaction_id):
     return None
 
 def find_facility_col(data):
-    """Find any column containing 'facility' (case-insensitive) in its name."""
+    """Find the facility NAME column (not other facility columns like facility district)."""
+    # First try: look for column with both 'facility' and 'name'
+    for col in data.columns:
+        col_lower = str(col).lower()
+        if 'facility' in col_lower and 'name' in col_lower:
+            return col
+    # Fallback: last column containing 'facility' (facility name is typically the last one)
+    last_match = None
     for col in data.columns:
         if 'facility' in str(col).lower():
-            return col
-    return None
+            last_match = col
+    return last_match
 
 
 def main():
