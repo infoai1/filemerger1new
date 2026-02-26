@@ -12,20 +12,6 @@ def extract_date(transaction_id):
             return f"{date_str[0:2]}/{date_str[2:4]}/{date_str[4:]}"
     return None
 
-def find_facility_col(data):
-    """Find the facility NAME column (not other facility columns like facility district)."""
-    # First try: look for column with both 'facility' and 'name'
-    for col in data.columns:
-        col_lower = str(col).lower()
-        if 'facility' in col_lower and 'name' in col_lower:
-            return col
-    # Fallback: last column containing 'facility' (facility name is typically the last one)
-    last_match = None
-    for col in data.columns:
-        if 'facility' in str(col).lower():
-            last_match = col
-    return last_match
-
 
 def main():
     st.title("Junaid's Excel File Merger")
@@ -39,21 +25,6 @@ def main():
         for uploaded_file in uploaded_files:
             data = read_excel(uploaded_file)
 
-            # DEBUG: Show all columns with 'facility' in name, with index and sample value
-            facility_cols_debug = []
-            for i, col in enumerate(data.columns):
-                if 'facility' in str(col).lower():
-                    sample = data[col].dropna().iloc[0] if not data[col].dropna().empty else 'EMPTY'
-                    facility_cols_debug.append(f"Col {i}: {col} = {sample}")
-            if facility_cols_debug:
-                st.write(f"DEBUG {uploaded_file.name} FACILITY COLS: " + " | ".join(facility_cols_debug))
-            else:
-                all_cols = [f"{i}:{c}" for i, c in enumerate(data.columns)]
-                st.write(f"DEBUG {uploaded_file.name} NO FACILITY COL FOUND. ALL COLS: " + ", ".join(all_cols))
-
-            # Auto-detect facility name column before any inserts
-            facility_col_name = find_facility_col(data)
-
             # Check file name for 'Presumptive'
             if uploaded_file.name.startswith('Presumptive'):
                 # Add 'Form Type' and 'Reporting Date' columns
@@ -61,20 +32,15 @@ def main():
                 if 'Patient Transaction Id' in data.columns:
                     data.insert(1, 'Reporting Date', data['Patient Transaction Id'].apply(extract_date))
 
-                # Keep only specified columns for Presumptive (skip any that don't exist in file)
+                # Keep only specified columns for Presumptive
                 columns_to_keep_presumptive = ['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
                                                'Contact Number', 'Gender', 'Age', 'Patient Address', 'Ward',
                                                'Provisional Diagnosis', 'District', 'Opd Ipd', 'Test Performed',
-                                               'Pathogen Name', 'Pathogen Subtype']
-                if facility_col_name:
-                    columns_to_keep_presumptive.append(facility_col_name)
+                                               'Pathogen Name', 'Pathogen Subtype', 'Facility Name']
                 columns_to_keep_presumptive = [c for c in columns_to_keep_presumptive if c in data.columns]
                 data = data[columns_to_keep_presumptive]
-                rename_map = {'Form Type': 'Type', 'Patient Name': 'Name of Patient',
-                              'Provisional Diagnosis': 'Confirmed Diagnosis'}
-                if facility_col_name:
-                    rename_map[facility_col_name] = 'Facility Name'
-                data = data.rename(columns=rename_map)
+                data = data.rename(columns={'Form Type': 'Type', 'Patient Name': 'Name of Patient',
+                                            'Provisional Diagnosis': 'Confirmed Diagnosis'})
 
             # Check file name for 'Laboratory'
             elif uploaded_file.name.startswith('Laboratory'):
@@ -83,19 +49,14 @@ def main():
                 if 'Batch Submitteddate' in data.columns:
                     data.insert(1, 'Reporting Date', data['Batch Submitteddate'])
 
-                # Keep only specified columns for Laboratory (skip any that don't exist in file)
+                # Keep only specified columns for Laboratory
                 columns_to_keep_laboratory = ['Form Type', 'Reporting Date', 'Date Of Onset', 'Patient Name',
                                               'Contact Number', 'Gender', 'Age', 'Patient Address', 'Ward',
                                               'Confirmed Diagnosis', 'District', 'Opd Ipd', 'Test Performed',
-                                              'Pathogen Name', 'Pathogen Subtype']
-                if facility_col_name:
-                    columns_to_keep_laboratory.append(facility_col_name)
+                                              'Pathogen Name', 'Pathogen Subtype', 'Facility Name']
                 columns_to_keep_laboratory = [c for c in columns_to_keep_laboratory if c in data.columns]
                 data = data[columns_to_keep_laboratory]
-                rename_map = {'Form Type': 'Type', 'Patient Name': 'Name of Patient'}
-                if facility_col_name:
-                    rename_map[facility_col_name] = 'Facility Name'
-                data = data.rename(columns=rename_map)
+                data = data.rename(columns={'Form Type': 'Type', 'Patient Name': 'Name of Patient'})
 
 
             # Check file name for 'Line'
@@ -107,7 +68,7 @@ def main():
                 if 'Updateddate' in data.columns:
                     data.insert(1, 'Reporting Date', data['Updateddate'])
 
-                # Keep only specified columns for Line form (skip any that don't exist in file)
+                # Keep only specified columns for Line form
                 columns_to_keep_line = ['Form Type', 'Reporting Date', 'Patient Name', 'Age', 'Gender','Houseno','Hfname','Sformdiseasename','Wardname','Latitude','Longitude']
                 columns_to_keep_line = [c for c in columns_to_keep_line if c in data.columns]
                 data = data[columns_to_keep_line]
