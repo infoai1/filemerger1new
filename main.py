@@ -44,11 +44,12 @@ def main():
             for i, col in enumerate(data.columns):
                 if 'facility' in str(col).lower():
                     sample = data[col].dropna().iloc[0] if not data[col].dropna().empty else 'EMPTY'
-                    facility_cols_debug.append(f"Index {i}: '{col}' → sample: '{sample}'")
+                    facility_cols_debug.append(f"Col {i}: {col} = {sample}")
             if facility_cols_debug:
-                st.error(f"FACILITY COLUMNS in {uploaded_file.name}:\n" + "\n".join(facility_cols_debug))
+                st.write(f"DEBUG {uploaded_file.name} FACILITY COLS: " + " | ".join(facility_cols_debug))
             else:
-                st.error(f"NO FACILITY COLUMNS in {uploaded_file.name}. ALL columns: {list(enumerate(data.columns.tolist()))}")
+                all_cols = [f"{i}:{c}" for i, c in enumerate(data.columns)]
+                st.write(f"DEBUG {uploaded_file.name} NO FACILITY COL FOUND. ALL COLS: " + ", ".join(all_cols))
 
             # Auto-detect facility name column before any inserts
             facility_col_name = find_facility_col(data)
