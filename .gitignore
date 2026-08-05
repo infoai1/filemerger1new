@@ -1,0 +1,21 @@
+# Virtual environments (never commit — breaks Streamlit Cloud)
+venv/
+.venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Streamlit / secrets
+.streamlit/secrets.toml
+*credentials*.json
+*-fcf4bf703835.json
