@@ -1,8 +1,11 @@
-# Pin Streamlit below the Starlette-default releases.
-# streamlit 1.61 + starlette 1.4 currently crash on Cloud with:
-# TypeError: GZipResponder.__init__() missing ... 'thread_minimum_size'
-# See https://github.com/streamlit/streamlit/issues/16341
-streamlit==1.55.0
-pandas==2.2.3
-openpyxl==3.1.5
-numpy==2.2.6
+# Streamlit Cloud (Python 3.14) currently resolves streamlit 1.61 + starlette 1.4,
+# which crashes at runtime:
+#   TypeError: GZipResponder.__init__() missing ... 'thread_minimum_size'
+# https://github.com/streamlit/streamlit/issues/16341
+#
+# Pin starlette to 1.3.1 (compatible constructor). Do NOT pin old pandas/numpy —
+# those lack cp314 wheels and break the Cloud install.
+streamlit==1.61.0
+starlette==1.3.1
+pandas
+openpyxl
